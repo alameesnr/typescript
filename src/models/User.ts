@@ -1,57 +1,45 @@
-import mongoose, { type Document, Schema } from "mongoose"
-import bcrypt from "bcryptjs"
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IUser extends Document {
-  username: string
-  email: string
-  password: string
-  comparePassword(candidatePassword: string): Promise<boolean>
+  name: string;
+  dateOfBirth: string;
+  phoneNumber: string;
+  email: string;
+  gender: 'Male' | 'Female';
+  password: string;
+  bloodGroup: string;
+  genotype: string;
+  medicalCondition: string;
+  lastDonationDate?: string;
+  currentLocation: string;
+  preferredRadius?: string;
+  preferredCenters?: string[];
+  isVerified: boolean;
+  verificationCode?: string;
+  resetCode?: string;
 }
 
-const UserSchema: Schema = new Schema(
-  {
-    username: {
-      type: String,
-      required: true,
-      trim: true,
-      minlength: 3,
-      maxlength: 30,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true,
-    
-    },
-    password: {
-      type: String,
-      required: true,
-      minlength: 8,
-    },
+const userSchema = new Schema<IUser>({
+  name: { type: String, required: true },
+  dateOfBirth: { type: String, required: true },
+  phoneNumber: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  gender: { type: String, enum: ['Male', 'Female'], required: true },
+  password: { type: String, required: true },
+  bloodGroup: {
+    type: String,
+    enum: ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'],
+    required: true,
   },
-  {
-    timestamps: true,
-  },
-)
+  genotype: { type: String, enum: ['AA', 'AS', 'SS'], required: true },
+  medicalCondition: { type: String, enum: ['Yes', 'No'], required: true },
+  lastDonationDate: { type: String },
+  currentLocation: { type: String, required: true },
+  preferredRadius: { type: String },
+  preferredCenters: { type: [String] },
+  isVerified: { type: Boolean, default: false },
+  verificationCode: { type: String },
+  resetCode: { type: String },
+}, { timestamps: true });
 
-// Hash password before saving
-UserSchema.pre<IUser>("save", async function (next) {
-  if (!this.isModified("password")) return next()
-
-  try {
-    const salt = await bcrypt.genSalt(12)
-    this.password = await bcrypt.hash(this.password, salt)
-    next()
-  } catch (error) {
-    next(error as Error)
-  }
-})
-
-// Compare password method
-UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
-  return bcrypt.compare(candidatePassword, this.password)
-}
-
-export default mongoose.model<IUser>("User", UserSchema)
+export default mongoose.model<IUser>('User', userSchema);
