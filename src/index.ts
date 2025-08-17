@@ -3,6 +3,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db';
 import authRoutes from './routes/authRoutes';
+import hospitalRoutes from "./routes/hos.routes";
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.use('/api/auth', authRoutes);
+app.use("/api", hospitalRoutes);
 
 
 app.get('/', (req, res) => {
